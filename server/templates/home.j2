@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head> 
+<script src="{{ url_for('static', filename = 'src/ace.js') }}" type="text/javascript" charset="utf-8"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+</head>
+
+<body> 
+<div style = "width: 1000px; height: 400px";    id = "editor"
+>if __name__ == '__main__' : 
+    print('Hello World')
+</div> 
+
+<button style = "margin-top: 10px" onclick = "runCode()">Run </button> 
+
+<div style = "margin-top: 20px"> 
+<textarea id = "compilation-error" style = "display : none; width : 80%; height: 80px;"></textarea> 
+</div> 
+
+<div style = "margin-top: 50px"> 
+<textarea id = 'input' placeholder = "Input"></textarea>
+<textarea id = 'output' placeholder = "Output"></textarea>  
+</div> 
+</body> 
+
+
+<script> 
+var editor = ace.edit("editor");
+editor.setTheme("ace/theme/xcode");
+editor.session.setMode("ace/mode/python");
+
+function runCode(){
+    var code = editor.getValue(); 
+    $.ajax({
+        url : '/run',
+        data: {
+            code: editor.getValue(),
+            input: '',
+        },
+        success: function(resp){
+            $('#compilation-error').val(resp.error);
+            console.log(resp.error.length); 
+            if(!resp.error.length)$('#compilation-error').hide();
+            else  $('#compilation-error').show(); 
+            $('#output').val(resp.output)
+            console.log('resp.output + error: ', resp.output, resp.error);  
+        }
+    }); 
+}
+</script> 
+</html>
