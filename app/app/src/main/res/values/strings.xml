@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="passwordforgotten"><u>Forgot your password ?</u></string>
+    <!-- Strings related to login -->
+    <string name="login">Login</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="signuphere">Sign Up Here</string>
+    <string name="loginhere">Already Have Account? Login here</string>
+    <string name="fullname">Fullname</string>
+    <string name="email">Email</string>
+    <string name="signup">SignUp</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+</resources>
