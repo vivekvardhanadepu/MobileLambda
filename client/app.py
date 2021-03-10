@@ -1,5 +1,4 @@
 import os
-import sqlite3
 from flask import Flask
 from flask import render_template, request, session, redirect, url_for, flash
 import subprocess

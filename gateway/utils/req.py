@@ -1,6 +1,6 @@
 import requests
 from requests.exceptions import HTTPError
-from gateway.utils.db import *
+from utils.db import *
 from flask import request
 
 

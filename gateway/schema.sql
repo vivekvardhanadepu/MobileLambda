@@ -1,7 +1,7 @@
 CREATE TABLE request(
     client_url INTEGER NOT NULL,
     request_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    status BOOLEAN DEFAULT '0' 
+    status BOOLEAN DEFAULT '0', 
     code TEXT NOT NULL,
     code_input TEXT NOT NULL,
     lang TEXT 

@@ -1,14 +1,14 @@
-from gateway.utils.db import *
-from gateway.utils.req import *
+from utils.db import *
+from utils.req import *
 # from db import *
 from flask import Flask, request
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
-req_sched = BackgroundScheduler(daemon=True)
-req_sched.add_job(run_req,'interval',seconds=1)
-req_sched.start()
+# req_sched = BackgroundScheduler(daemon=True)
+# req_sched.add_job(run_req,'interval',seconds=1)
+# req_sched.start()
 
 @app.route('/')
 def console():
@@ -35,7 +35,7 @@ def run_request():
 def conn_request():
     if request.method == 'GET':
         socket_id = request.url
-        if(request.args.get('type')):
+        if(int(request.args.get('type'))):
             if(remove_server(socket_id)):
                 return "server disconnected" # send proper response
             else:

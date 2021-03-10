@@ -58,6 +58,7 @@ def remove_server(socket_id):
 
 def fetch_pending_req():
     error = False
+    req = None
     try:
         db = sqlite3.connect('database.db')
         req = db.cursor().execute("SELECT * FROM request\
