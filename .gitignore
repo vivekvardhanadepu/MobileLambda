@@ -1,0 +1,4 @@
+app/.gradle/*
+app/.idea/*
+app/app/build.gradle
+app/build.gradle
