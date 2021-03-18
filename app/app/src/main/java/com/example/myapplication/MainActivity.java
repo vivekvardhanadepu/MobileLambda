@@ -16,6 +16,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -24,10 +26,6 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-
-import com.chaquo.python.PyObject;
-import com.chaquo.python.Python;
-import com.chaquo.python.android.AndroidPlatform;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -39,8 +37,11 @@ import okhttp3.Call;
 import okhttp3.Callback;
 
 import fi.iki.elonen.NanoHTTPD;
-import android.net.wifi.WifiManager;
-import android.text.format.Formatter;
+import java.net.NetworkInterface;
+import java.util.Collections;
+import java.util.List;
+//import android.net.wifi.WifiManager;
+//import android.text.format.Formatter;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -79,10 +80,6 @@ public class MainActivity extends AppCompatActivity {
         welcome_note.setText("Welcome " + username);
         message = findViewById(R.id.response);
 
-        if (!Python.isStarted()) {
-            Python.start(new AndroidPlatform(this));
-        }
-
         MyHTTPD server = null;
         try {
             server = new MyHTTPD();
@@ -100,33 +97,35 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
 //                        message.setText(response);
+//                        try {
+//                            FileOutputStream fileout=openFileOutput("demo.py", MODE_PRIVATE);
+//                            OutputStreamWriter outputWriter=new OutputStreamWriter(fileout);
+////                            outputWriter.write("print(\"damnu\")\ndef main():\n\tn=365\n\tprint(n)\n\treturn n\ndef main2():\n\treturn35");
+//                            outputWriter.write("print(\"damn\")");
+//                            outputWriter.close();
+
+                        Interpreter interpreter = new Interpreter();
+                        String temp = "eval";
                         try {
-                            FileOutputStream fileout=openFileOutput("demo.py", MODE_PRIVATE);
-                            OutputStreamWriter outputWriter=new OutputStreamWriter(fileout);
-//                            outputWriter.write("print(\"damnu\")\ndef main():\n\tn=365\n\tprint(n)\n\treturn n\ndef main2():\n\treturn35");
-                            outputWriter.write("print(\"damn\")");
-                            outputWriter.close();
-                            Interpreter interpreter = new Interpreter();
-                            String temp = "eval";
-                            try {
-                                interpreter.set("context", this);//set any variable, you can refer to it directly from string
-                                interpreter.eval("result = (7+21*6)/(32-27)");//execute code
-                                temp = interpreter.get("result").toString();
-                            }
-                            catch (Exception e){//handle exce   ption
-                                e.printStackTrace();
-                            }
-                            final String temp2 = temp;
-                            //display file saved message
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), temp2 , Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        } catch (Exception e) {
+                            interpreter.set("context", this);//set any variable, you can refer to it directly from string
+                            interpreter.eval("result = (7+21*6)/(32-27)");//execute code
+                            temp = interpreter.get("result").toString();
+                        }
+                        catch (Exception e){    //handle exception
                             e.printStackTrace();
                         }
+
+                        final String temp2 = temp;
+                        //display file saved message
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), getIPAddress(true) , Toast.LENGTH_SHORT).show();
+                            }
+                        });
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
 
                         if (isRunning) {
                             runOnUiThread(new Runnable() {
@@ -160,53 +159,48 @@ public class MainActivity extends AppCompatActivity {
 //
 //                        }
 
-//                        try {
-//                            OkHttpClient client = new OkHttpClient();
-//
-//                            HttpUrl.Builder urlBuilder = HttpUrl.parse("http://192.168.0.105:5000/conn_request").newBuilder();
-//                            urlBuilder.addQueryParameter("type", "0");
-////                            urlBuilder.addQueryParameter("user", "vogella");
-//                            String url = urlBuilder.build().toString();
-//
-//                            Request request = new Request.Builder()
-//                                    .url(url)
-//                                    .build();
-//
-//                            client.newCall(request).enqueue(new Callback() {
-//                                @Override
-//                                public void onFailure(Call call, IOException e) {
-//                                    e.printStackTrace();
-//                                }
-//
-//                                @Override
-//                                public void onResponse(Call call, final Response response) throws IOException {
-//                                    if (!response.isSuccessful()) {
-//                                        throw new IOException("Unexpected code " + response);
-//                                    } else {
-//                                        runOnUiThread(new Runnable() {
-//                                            @Override
-//                                            public void run() {
-//                                                Toast.makeText(getApplicationContext(), "Server started !!", Toast.LENGTH_SHORT).show();
-//                                            }
-//                                        });
-//                                    }
-//                                }
-//                            });
+                        try {
+                            OkHttpClient client = new OkHttpClient();
+
+                            HttpUrl.Builder urlBuilder = HttpUrl.parse("  http://468580b6767b.ngrok.io/conn_request").newBuilder();
+                            urlBuilder.addQueryParameter("code", "happy aa?");
+//                            urlBuilder.addQueryParameter("user", "vogella");
+                            String url = urlBuilder.build().toString();
+
+                            Request request = new Request.Builder()
+                                    .url(url)
+                                    .build();
+
+                            client.newCall(request).enqueue(new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                                @Override
+                                public void onResponse(Call call, final Response response) throws IOException {
+                                    if (!response.isSuccessful()) {
+                                        throw new IOException("Unexpected code " + response);
+                                    } else {
+                                        finalServer.start();
+                                        isRunning = true;
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getApplicationContext(), "Server started !!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
 //                            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
 //                            InetAddress ia = InetAddress.getLocalHost();
 //                            String ip = ia.getHostAddress();
 
-                            try {
-
-                                finalServer.start();
-                                isRunning = true;
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(), "lyaaggg", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
 
 //                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
 //
@@ -225,17 +219,12 @@ public class MainActivity extends AppCompatActivity {
 //                                }
 //                                socket.close();
 //                                message.setText(finalServer.response);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
 //                        } catch (Exception e) {
 //                            e.printStackTrace();
 //                        }
                     }
                 });
                 thread.start();
-
             }
         });
 
@@ -243,46 +232,43 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isRunning) {
-//                    OkHttpClient client = new OkHttpClient();
-//
-//                    HttpUrl.Builder urlBuilder = HttpUrl.parse("http://e0481ef8000f.ngrok.io/conn_request").newBuilder();
+                    OkHttpClient client = new OkHttpClient();
+
+                    HttpUrl.Builder urlBuilder = HttpUrl.parse(" http://7963ac7b67a1.ngrok.io/disc_request").newBuilder();
 //                    urlBuilder.addQueryParameter("type", "1");
-////                    urlBuilder.addQueryParameter("user", "vogella");
-//                    String url = urlBuilder.build().toString();
-//
-//                    Request request = new Request.Builder()
-//                            .url(url)
-//                            .build();
-//
-//                    client.newCall(request).enqueue(new Callback() {
-//                        @Override
-//                        public void onFailure(Call call, IOException e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                        @Override
-//                        public void onResponse(Call call, final Response response) throws IOException {
-//                            if (!response.isSuccessful()) {
-//                                throw new IOException("Unexpected code " + response);
-//                            } else {
-//                                runOnUiThread(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        Toast.makeText(getApplicationContext(), "Server started !!", Toast.LENGTH_SHORT).show();
-//                                    }
-//                                });
-//                            }
-//                        }
-//                    });
-//                    try{
+//                    urlBuilder.addQueryParameter("user", "vogella");
+                    String url = urlBuilder.build().toString();
+
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        @Override
+                        public void onResponse(Call call, final Response response) throws IOException {
+                            if (!response.isSuccessful()) {
+                                throw new IOException("Unexpected code " + response);
+                            } else {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(), "Server stopped !!", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }
+                    });
+
                     finalServer.stop();
                     isRunning = false;
-//                        Toast.makeText(getApplicationContext(),"Server Stopped!!", Toast.LENGTH_SHORT).show();
-//                    }
-//                    catch (IOException e){
-//                        e.printStackTrace();
-//                    }
+
                 } else {
+                    // close server
                     Toast.makeText(getApplicationContext(), "Server is already closed!!", Toast.LENGTH_SHORT).show();
                 }
 //                if(socket!=null){
@@ -294,23 +280,6 @@ public class MainActivity extends AppCompatActivity {
 //                        e.printStackTrace();
 //                    }
 //                }
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Python py = Python.getInstance();
-                        PyObject temp = py.getModule("hello").callAttr("main");
-                        String temp_text = temp.toString();
-//                        message.setText("helllo");
-                        Log.d("CREATION", temp_text);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run () {
-                                Toast.makeText(getApplicationContext(), temp_text, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                });
-                thread.start();
 //                message.setText(temp_text);
             }
         });
@@ -327,18 +296,47 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @NotNull
+    public static String getIPAddress(boolean useIPv4) {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addrs) {
+                    if (!addr.isLoopbackAddress()) {
+                        String sAddr = addr.getHostAddress();
+
+                        boolean isIPv4 = sAddr.indexOf(':')<0;
+
+                        if (useIPv4) {
+                            if (isIPv4)
+                                return sAddr;
+                        } else {
+                            if (!isIPv4) {
+                                int delim = sAddr.indexOf('%');
+                                return delim<0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) { }
+        return "";
+    }
+
     public class MyHTTPD extends NanoHTTPD {
         public static final int PORT = 8765;
         public String response;
 //        public String uri = session.getUri();
         public MyHTTPD() throws IOException {
-            super(PORT);
+            super(null, PORT);
         }
 
         @Override
         public Response serve(IHTTPSession session) {
             String uri = session.getUri();
             if (uri.equals("/hello")) {
+
                 response = "HelloWorld";
                 return newFixedLengthResponse(response);
             }
