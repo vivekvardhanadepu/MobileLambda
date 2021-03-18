@@ -27,6 +27,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -50,6 +52,14 @@ import java.io.OutputStreamWriter;
 
 import bsh.Interpreter;
 
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.Constraints;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.NetworkType;
+import androidx.work.BackoffPolicy;
+
+import androidx.work.WorkManager;
+
 public class MainActivity extends AppCompatActivity {
 
     TextView welcome_note, message;
@@ -59,8 +69,10 @@ public class MainActivity extends AppCompatActivity {
     //    ServerSocket server = null;
 //    Socket socket = null;
     boolean isRunning = false;
-    Thread Thread1 = null;
-    DataInputStream in = null;
+//    android.app.Application application =
+    private WorkManager mWorkManager = WorkManager.getInstance(getApplication());
+//    Thread Thread1 = null;
+//    DataInputStream in = null;
 
 
     @Override
@@ -80,20 +92,19 @@ public class MainActivity extends AppCompatActivity {
         welcome_note.setText("Welcome " + username);
         message = findViewById(R.id.response);
 
-        MyHTTPD server = null;
-        try {
-            server = new MyHTTPD();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        MyHTTPD finalServer = server;
+//        MyHTTPD server = null;
+//        try {
+//            server = new MyHTTPD();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        MyHTTPD finalServer = server;
 
         start_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Thread thread = new Thread(new Runnable() {
-                    //                    String response = "";
                     @Override
                     public void run() {
 //                        message.setText(response);
@@ -104,25 +115,25 @@ public class MainActivity extends AppCompatActivity {
 //                            outputWriter.write("print(\"damn\")");
 //                            outputWriter.close();
 
-                        Interpreter interpreter = new Interpreter();
-                        String temp = "eval";
-                        try {
-                            interpreter.set("context", this);//set any variable, you can refer to it directly from string
-                            interpreter.eval("result = (7+21*6)/(32-27)");//execute code
-                            temp = interpreter.get("result").toString();
-                        }
-                        catch (Exception e){    //handle exception
-                            e.printStackTrace();
-                        }
-
-                        final String temp2 = temp;
-                        //display file saved message
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), getIPAddress(true) , Toast.LENGTH_SHORT).show();
-                            }
-                        });
+//                        Interpreter interpreter = new Interpreter();
+//                        String temp = "eval";
+//                        try {
+//                            interpreter.set("context", this);//set any variable, you can refer to it directly from string
+//                            interpreter.eval("result = (7+21*6)/(32-27)");//execute code
+//                            temp = interpreter.get("result").toString();
+//                        }
+//                        catch (Exception e){    //handle exception
+//                            e.printStackTrace();
+//                        }
+//
+//                        final String temp2 = temp;
+//                        //display file saved message
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Toast.makeText(getApplicationContext(), getIPAddress(true) , Toast.LENGTH_SHORT).show();
+//                            }
+//                        });
 //                        } catch (Exception e) {
 //                            e.printStackTrace();
 //                        }
@@ -158,43 +169,63 @@ public class MainActivity extends AppCompatActivity {
 //                            }
 //
 //                        }
-
-                        try {
-                            OkHttpClient client = new OkHttpClient();
-
-                            HttpUrl.Builder urlBuilder = HttpUrl.parse("  http://468580b6767b.ngrok.io/conn_request").newBuilder();
-                            urlBuilder.addQueryParameter("code", "happy aa?");
-//                            urlBuilder.addQueryParameter("user", "vogella");
-                            String url = urlBuilder.build().toString();
-
-                            Request request = new Request.Builder()
-                                    .url(url)
+                        else {
+//                            try {
+//                                OkHttpClient client = new OkHttpClient();
+//
+//                                HttpUrl.Builder urlBuilder = HttpUrl.parse("http://73037d736a67.ngrok.io/conn_request").newBuilder();
+//                                //                            urlBuilder.addQueryParameter("code", "happy aa?");
+//                                //                            urlBuilder.addQueryParameter("user", "vogella");
+//                                String url = urlBuilder.build().toString();
+//
+//                                Request request = new Request.Builder()
+//                                        .url(url)
+//                                        .build();
+//
+//                                client.newCall(request).enqueue(new Callback() {
+//                                    @Override
+//                                    public void onFailure(Call call, IOException e) {
+//                                        e.printStackTrace();
+//                                    }
+//
+//                                    @Override
+//                                    public void onResponse(Call call, final Response response) throws IOException {
+//                                        if (!response.isSuccessful()) {
+//                                            throw new IOException("Unexpected code " + response);
+//                                        } else {
+//                                            //                                        finalServer.start();
+//                                            isRunning = true;
+//                                            runOnUiThread(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    Toast.makeText(getApplicationContext(), "Server started !!", Toast.LENGTH_SHORT).show();
+//                                                }
+//                                            });
+//                                        }
+//                                    }
+//                                });
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+                            // Create Network constraint
+                            Constraints constraints = new Constraints.Builder()
+                                    .setRequiredNetworkType(NetworkType.CONNECTED)
                                     .build();
 
-                            client.newCall(request).enqueue(new Callback() {
-                                @Override
-                                public void onFailure(Call call, IOException e) {
-                                    e.printStackTrace();
-                                }
 
-                                @Override
-                                public void onResponse(Call call, final Response response) throws IOException {
-                                    if (!response.isSuccessful()) {
-                                        throw new IOException("Unexpected code " + response);
-                                    } else {
-                                        finalServer.start();
-                                        isRunning = true;
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(getApplicationContext(), "Server started !!", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                            PeriodicWorkRequest periodicRunRequestWork =
+                                    new PeriodicWorkRequest.Builder(fetchRequest.class, 15, TimeUnit.SECONDS)
+                                            .addTag("run_requests")
+                                            .setConstraints(constraints)
+                                            // setting a backoff on case the work needs to retry
+                                            .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
+                                            .build();
+                            mWorkManager.enqueueUniquePeriodicWork(
+                                    "fetchRequest",
+                                    ExistingPeriodicWorkPolicy.KEEP, //Existing Periodic Work policy
+                                    periodicRunRequestWork //work request
+                            );
+                            isRunning = true;
                         }
 
 //                            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
@@ -232,39 +263,39 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isRunning) {
-                    OkHttpClient client = new OkHttpClient();
+//                    OkHttpClient client = new OkHttpClient();
+//
+//                    HttpUrl.Builder urlBuilder = HttpUrl.parse("http://054072438282.ngrok.io/disc_request").newBuilder();
+////                    urlBuilder.addQueryParameter("type", "1");
+////                    urlBuilder.addQueryParameter("user", "vogella");
+//                    String url = urlBuilder.build().toString();
+//
+//                    Request request = new Request.Builder()
+//                            .url(url)
+//                            .build();
+//
+//                    client.newCall(request).enqueue(new Callback() {
+//                        @Override
+//                        public void onFailure(Call call, IOException e) {
+//                            e.printStackTrace();
+//                        }
+//
+//                        @Override
+//                        public void onResponse(Call call, final Response response) throws IOException {
+//                            if (!response.isSuccessful()) {
+//                                throw new IOException("Unexpected code " + response);
+//                            } else {
+//                                runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        Toast.makeText(getApplicationContext(), "Server stopped !!", Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//                            }
+//                        }
+//                    });
 
-                    HttpUrl.Builder urlBuilder = HttpUrl.parse(" http://7963ac7b67a1.ngrok.io/disc_request").newBuilder();
-//                    urlBuilder.addQueryParameter("type", "1");
-//                    urlBuilder.addQueryParameter("user", "vogella");
-                    String url = urlBuilder.build().toString();
-
-                    Request request = new Request.Builder()
-                            .url(url)
-                            .build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onResponse(Call call, final Response response) throws IOException {
-                            if (!response.isSuccessful()) {
-                                throw new IOException("Unexpected code " + response);
-                            } else {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(), "Server stopped !!", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }
-                    });
-
-                    finalServer.stop();
+//                    finalServer.stop();
                     isRunning = false;
 
                 } else {
@@ -296,53 +327,75 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @NotNull
-    public static String getIPAddress(boolean useIPv4) {
-        try {
-            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
-            for (NetworkInterface intf : interfaces) {
-                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
-                for (InetAddress addr : addrs) {
-                    if (!addr.isLoopbackAddress()) {
-                        String sAddr = addr.getHostAddress();
+//    @NotNull
+//    public static String getIPAddress(boolean useIPv4) {
+//        try {
+//            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+//            for (NetworkInterface intf : interfaces) {
+//                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+//                for (InetAddress addr : addrs) {
+//                    if (!addr.isLoopbackAddress()) {
+//                        String sAddr = addr.getHostAddress();
+//
+//                        boolean isIPv4 = sAddr.indexOf(':')<0;
+//
+//                        if (useIPv4) {
+//                            if (isIPv4)
+//                                return sAddr;
+//                        } else {
+//                            if (!isIPv4) {
+//                                int delim = sAddr.indexOf('%');
+//                                return delim<0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase();
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception ignored) { }
+//        return "";
+//    }
 
-                        boolean isIPv4 = sAddr.indexOf(':')<0;
-
-                        if (useIPv4) {
-                            if (isIPv4)
-                                return sAddr;
-                        } else {
-                            if (!isIPv4) {
-                                int delim = sAddr.indexOf('%');
-                                return delim<0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase();
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) { }
-        return "";
-    }
-
-    public class MyHTTPD extends NanoHTTPD {
-        public static final int PORT = 8765;
-        public String response;
-//        public String uri = session.getUri();
-        public MyHTTPD() throws IOException {
-            super(null, PORT);
-        }
-
-        @Override
-        public Response serve(IHTTPSession session) {
-            String uri = session.getUri();
-            if (uri.equals("/hello")) {
-
-                response = "HelloWorld";
-                return newFixedLengthResponse(response);
-            }
-            return null;
-        }
-    }
+//    public class MyHTTPD extends NanoHTTPD {
+//        public static final int PORT = 8765;
+//        public String response;
+////        public String uri = session.getUri();
+//        public MyHTTPD() throws IOException {
+//            super(null, PORT);
+//        }
+//
+//        @Override
+//        public Response serve(IHTTPSession session) {
+//            String uri = session.getUri();
+//            if (uri.equals("/hello")) {
+//
+//                String code = session.getParameters().get("code").get(0);
+//
+//                Interpreter interpreter = new Interpreter();
+//                String temp = "eval";
+//                try {
+//                    interpreter.set("context", this);//set any variable, you can refer to it directly from string
+//                    interpreter.eval(code);//execute code
+//                    temp = interpreter.get("result").toString();
+//                }
+//                catch (Exception e){    //handle exception
+//                    e.printStackTrace();
+//                }
+//
+//                final String temp2 = temp;
+//                //display file saved message
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Toast.makeText(getApplicationContext(), temp2 , Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//
+//                response = temp2;
+//                return newFixedLengthResponse(response);
+//            }
+//            return null;
+//        }
+//    }
 
 
 }

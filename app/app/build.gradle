@@ -48,6 +48,7 @@ dependencies {
     implementation 'com.github.VishnuSivadasVS:Advanced-HttpURLConnection:1.2'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'org.beanshell:bsh:2.0b5'
+    implementation "androidx.work:work-runtime:2.1.0"
 }
 
 apply plugin: 'com.google.gms.google-services'
