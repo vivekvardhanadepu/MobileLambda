@@ -1,31 +1,32 @@
 package com.example.myapplication;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.vishnusivadas.advanced_httpurlconnection.PutData;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class Registration extends AppCompatActivity {
     TextInputEditText fullname, username, email, password;
 
+    FirebaseAuth mFirebaseAuth;
     Button signup_btn;
     ProgressBar progressBar;
 
@@ -37,7 +38,7 @@ public class Registration extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
         fullname = findViewById(R.id.fullname);
         username = findViewById(R.id.username);
-
+        mFirebaseAuth = FirebaseAuth.getInstance();
         email = findViewById(R.id.email);
         password = findViewById(R.id.password);
         progressBar = findViewById(R.id.progress);
@@ -71,38 +72,21 @@ public class Registration extends AppCompatActivity {
                         @Override
                         public void run() {
                             //Starting Write and Read data with URL
-                            //Creating array for parameters
-                            String[] field = new String[4];
-                            field[0] = "username";
-                            field[1] = "password";
-                            field[2] = "fullname";
-                            field[3] = "email";
-
-                            //Creating array for data
-                            String[] data = new String[4];
-                            data[0] = uname;
-                            data[1] = passw;
-                            data[2] = fname;
-                            data[3] = eml;
-                            PutData putData = new PutData("https://material-tracker.000webhostapp.com/signup.php", "POST", field, data);
-                            Log.d("url : ",putData.toString());
-                            if (putData.startPut()) {
-                                if (putData.onComplete()) {
-                                    progressBar.setVisibility(view.GONE);
-                                    String result = putData.getResult();
-                                    if(result.equals("Sign Up Success")){
-                                        Toast.makeText(getApplicationContext(),result,Toast.LENGTH_SHORT).show();
+                            mFirebaseAuth.createUserWithEmailAndPassword(eml, passw).addOnCompleteListener(Registration.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if(!task.isSuccessful()){
+                                        Toast.makeText(getApplicationContext(),"SignUp failed!!",Toast.LENGTH_SHORT).show();
+                                    }
+                                    else{
+                                        Toast.makeText(getApplicationContext(),"SignUp success!!",Toast.LENGTH_SHORT).show();
                                         Intent intent = new Intent(getApplicationContext(), Login.class);
                                         startActivity(intent);
                                         finish();
                                     }
-                                    else{
-                                        Toast.makeText(getApplicationContext(),result,Toast.LENGTH_SHORT).show();
-                                    }
-                                    //End ProgressBar (Set visibility to GONE)
-                                    Log.i("PutData", result);
                                 }
-                            }
+                            });
+
                             //End Write and Read data with URL
                         }
                     });
