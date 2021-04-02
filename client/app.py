@@ -1,5 +1,4 @@
 import os
-import sqlite3
 from flask import Flask
 from flask import render_template, request, session, redirect, url_for, flash
 import subprocess
@@ -8,6 +7,9 @@ import subprocess
 # STATIC_DIR = os.path.join('.', 'static')
 
 app = Flask(__name__)
+activeQueries = {}
+answeredQueries = {}
+queryId = 0 
 
 @app.route('/')
 def home():
@@ -20,30 +22,77 @@ def home():
 def login():
     # error = None
     if request.method == 'POST':
-        if request.form['username'] != 'admin' or request.form['password'] != 'admin':
+        if request.form['username'] == '':
             # error = 'Invalid Credentials. Please try again.'
             flash('wrong password!')
         else:
             session['logged_in'] = True
+            session['username'] = request.form['username']
             return redirect(url_for('home'))
     return render_template('login.html')
 
 @app.route('/run')
 def run(): 
+    global activeQueries
+    global answeredQueries
+    global queryId 
+
     code = request.args.get('code')
     code_input = request.args.get('input')
-    print(code, 'code_input: ', code_input)
 
-    with open('demo.py', 'w+') as f: 
-        f.write(code)
-    proc = subprocess.run(['python3', 'demo.py'], input = code_input, capture_output = True,
-                                     text = True)
-    # output, error = proc.stdout.decode('utf-8'), proc.stderr.decode('utf-8')
-    output = proc.stdout
-    error  = proc.stderr
-    print(proc)
-    print(output, error)
-    return {'output': output, 'error' : error}
+    currId = queryId
+    activeQueries[currId] = {'code' : code, 'code_input' : code_input}
+    queryId += 1
+
+    print(str(activeQueries))
+    while currId not in answeredQueries : 
+        pass
+
+    data = answeredQueries.pop(currId)
+    print(data['code'], data['code_input'], data['code_output'])
+    assert data['code'] == code and data['code_input'] == code_input
+    return data['code_output']
+
+    # with open('demo.py', 'w+') as f: 
+    #     f.write(code)
+    # proc = subprocess.run(['python3', 'demo.py'], input = code_input, capture_output = True,
+    #                                  text = True)
+    # # output, error = proc.stdout.decode('utf-8'), proc.stderr.decode('utf-8')
+    # output = proc.stdout
+    # error  = proc.stderr
+    # print(proc)
+    # print(output, error)
+    # return {'output': output, 'error' : error}
+
+@app.route('/getCodes')
+def getCodes(): 
+    if not activeQueries : 
+        return ''
+    currId, data = activeQueries.popitem()
+    return {'currId' : currId, 'code' : data['code'], 'input' : data['code_input']}
+
+@app.route('/submitOutput')
+def submitOutput(): 
+    currId = request.args.get('currId')
+    code = request.args.get('code')
+    code_input = request.args.get('code_input')
+    code_output = request.args.get('code_output') 
+    
+    answeredQueries[currId] = {'code' : code, 'code_input' : code_input, 'code_output' : code_output}
+    return ''
+
+# import time 
+# NUM = 0 
+# @app.route('/some_request')
+# def some_request(): 
+#     global NUM
+#     NUM += 1 
+#     if NUM == 1 : 
+#         time.sleep(100)
+
+#     return 'hello- ' + str(NUM) 
+#     print(request.url)
+#     return 'hello'
 
 if __name__ == '__main__' : 
     app.secret_key = os.urandom(12)
