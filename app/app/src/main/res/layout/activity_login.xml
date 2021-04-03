@@ -40,7 +40,7 @@
                     android:layout_marginLeft="30dp"
                     android:layout_marginRight="30dp"
                     android:layout_marginTop="40dp"
-                    android:hint="@string/username"
+                    android:hint="@string/email"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
@@ -49,11 +49,11 @@
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/username"
                         android:layout_width="match_parent"
-                        android:textColor="@color/colorAccent"
                         android:layout_height="wrap_content"
-                        android:drawableEnd="@drawable/ic_person"
                         android:background="@color/white"
+                        android:drawableEnd="@drawable/ic_person"
                         android:fontFamily="@font/poppinsmedium"
+                        android:textColor="@color/colorAccent"
                         tools:targetApi="jelly_bean" />
                 </com.google.android.material.textfield.TextInputLayout>
 

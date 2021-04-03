@@ -17,20 +17,25 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.util.TimerTask;
 import java.util.Timer;
+import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 public class fetchRequest{
 
     private static final String TAG = fetchRequest.class.getSimpleName();
-    private static final String gateway_url = "http://0f264df16e2b.ngrok.io";
+    private static final String gateway_url = "http://ffd4e34e94a1.ngrok.io";
     Timer timer = new Timer();
+    private Context appContext;
 
-//    public fetchRequest(@NonNull Context appContext, @NonNull WorkerParameters workerParams) {
-//        super(appContext, workerParams);
-//    }
+    public fetchRequest(@NonNull Context appContext) {
+        this.appContext = appContext;
+    }
     public void scheduleFetchRequest() {
         timer.schedule(new TimerTask() {
 
@@ -59,12 +64,15 @@ public class fetchRequest{
 
                         @Override
                         public void onResponse(Call call, final Response response) throws IOException {
-                            if (!response.isSuccessful() && response.body() != null) {
+                            if (!response.isSuccessful() || response.body() == null) {
                                 throw new IOException("Unexpected code " + response);
                             } else {
-                                if(response.body().toString().length() > 0 && !response.body().toString().isEmpty()) {
+                                if(response.body().toString().length() > 0) {
                                     String json = response.body().string();
                                     JSONObject data = null;
+                                    if(json.lastIndexOf("}")<=0){
+                                        return;
+                                    }
                                     try {
                                         data = new JSONObject(json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1));
                                     } catch (JSONException e) {
@@ -88,7 +96,13 @@ public class fetchRequest{
 
                                     Log.i(TAG, "Running code ");
                                     String output = runCode(code);
-                                    Log.i(TAG, "Sending output ");
+                                    Log.i(TAG, "Sending output");
+                                    ContextCompat.getMainExecutor(appContext).execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(appContext,output,Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                     sendOutput(output, currId, code, input);
                                 }
                             }
@@ -120,9 +134,14 @@ public class fetchRequest{
             System.setOut(out);
             interpreter.set("context", this);   //set any variable,
                                                         // you can refer to it directly from string
-            interpreter.eval(code);             //execute code
+            try {
+                interpreter.eval(code);             //execute code
+                temp = tempStream.toString();
+            } catch (Exception ex){
+                Log.i(TAG,"script execution failed" + ex);
+                temp = "error:  " + ex;
+            }
             System.setOut(stdout);
-            temp = tempStream.toString();
             Log.i(TAG, "output:" + temp);
         }
         catch (Exception e){    //handle exception
@@ -159,18 +178,8 @@ public class fetchRequest{
                     if (!response.isSuccessful() && response.body() != null) {
                         throw new IOException("Unexpected code " + response);
                     } else {
-                        if(response.body().toString().length() > 0 && !response.body().toString().isEmpty()) {
-
-                            JSONObject data = null;
-                            try {
-                                data = new JSONObject(response.body().string());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            Log.i(TAG, "Json String from gateway " + data);
-
-                        }
+//                        Log.i(TAG, "Json String from gateway ");
+                        ;
                     }
                 }
             });

@@ -76,10 +76,20 @@ public class Registration extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if(!task.isSuccessful()){
-                                        Toast.makeText(getApplicationContext(),"SignUp failed!!",Toast.LENGTH_SHORT).show();
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getApplicationContext(), "SignUp failed!!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                     }
                                     else{
-                                        Toast.makeText(getApplicationContext(),"SignUp success!!",Toast.LENGTH_SHORT).show();
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getApplicationContext(), "SignUp success!!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                         Intent intent = new Intent(getApplicationContext(), Login.class);
                                         startActivity(intent);
                                         finish();
@@ -92,7 +102,12 @@ public class Registration extends AppCompatActivity {
                     });
                 }
                 else{
-                    Toast.makeText(getApplicationContext(), "All fields are required", Toast.LENGTH_SHORT).show();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "All fields are required!!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
         });
