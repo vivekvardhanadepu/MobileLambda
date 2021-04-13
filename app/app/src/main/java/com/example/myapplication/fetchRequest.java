@@ -33,7 +33,7 @@ import java.io.FileInputStream;
 public class fetchRequest{
 
     private static final String TAG = fetchRequest.class.getSimpleName();
-    private static final String gateway_url = "https://android-lambda.herokuapp.com";
+    private static final String gateway_url = "http://54.160.83.123:5000";
     Timer timer;
     public String username;
     private Context appContext;
@@ -115,12 +115,13 @@ public class fetchRequest{
                                     String[] outputs = new String[2];
                                     outputs = runCode(code, input);
                                     Log.i(TAG, "Sending output");
-//                                    ContextCompat.getMainExecutor(appContext).execute(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            Toast.makeText(appContext, outputs[0]+outputs[1],Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    });
+                                    final String[] outputs_temp = outputs;
+                                    ContextCompat.getMainExecutor(appContext).execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(appContext, "ouput: "+outputs_temp[0]+"\nerror: "+outputs_temp[1],Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                     sendOutput(outputs[0], currId, code, input, outputs[1]);
                                     runTimerTask.cancel();
                                 }
