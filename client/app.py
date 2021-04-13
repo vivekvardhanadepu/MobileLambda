@@ -40,29 +40,19 @@ def run():
     code = request.args.get('code')
     code_input = request.args.get('input')
 
-    currId = queryId
+    currId = str(queryId)
     activeQueries[currId] = {'code' : code, 'code_input' : code_input}
     queryId += 1
 
     print(str(activeQueries))
     while currId not in answeredQueries : 
+        # print(currId, answeredQueries)
         pass
 
     data = answeredQueries.pop(currId)
     print(data['code'], data['code_input'], data['code_output'])
     assert data['code'] == code and data['code_input'] == code_input
-    return data['code_output']
-
-    # with open('demo.py', 'w+') as f: 
-    #     f.write(code)
-    # proc = subprocess.run(['python3', 'demo.py'], input = code_input, capture_output = True,
-    #                                  text = True)
-    # # output, error = proc.stdout.decode('utf-8'), proc.stderr.decode('utf-8')
-    # output = proc.stdout
-    # error  = proc.stderr
-    # print(proc)
-    # print(output, error)
-    # return {'output': output, 'error' : error}
+    return {'error' : '', 'output' : data['code_output']}
 
 @app.route('/getCodes')
 def getCodes(): 
@@ -77,6 +67,8 @@ def submitOutput():
     code = request.args.get('code')
     code_input = request.args.get('code_input')
     code_output = request.args.get('code_output') 
+
+    print('code : ', code, '\ncode_input: ', code_input, '\ncode_output: ', code_output)
     
     answeredQueries[currId] = {'code' : code, 'code_input' : code_input, 'code_output' : code_output}
     return ''
