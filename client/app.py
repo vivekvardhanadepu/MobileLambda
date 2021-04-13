@@ -7,6 +7,7 @@ import subprocess
 # STATIC_DIR = os.path.join('.', 'static')
 
 app = Flask(__name__)
+app.secret_key = os.urandom(12)
 activeQueries = {}
 answeredQueries = {}
 queryId = 0 
