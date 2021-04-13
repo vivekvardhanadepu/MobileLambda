@@ -89,10 +89,6 @@ public class Login extends AppCompatActivity {
                 uname = String.valueOf(username.getText());
                 pass = String.valueOf(password.getText());
 
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.putExtra("username", uname);
-                startActivity(intent);
-                finish();
                 if(!uname.equals("")&&!pass.equals("")){
                     progressBar.setVisibility(view.VISIBLE);
 

@@ -36,7 +36,7 @@ function runCode(){
         url : '/run',
         data: {
             code: editor.getValue(),
-            input: '',
+            input: 'vivek',
         },
         success: function(resp){
             $('#compilation-error').val(resp.error);

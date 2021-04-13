@@ -1,7 +1,9 @@
 package com.example.myapplication;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 
 import okhttp3.Call;
@@ -20,23 +22,28 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.sql.Time;
 import java.util.TimerTask;
 import java.util.Timer;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import java.io.FileInputStream;
 
 public class fetchRequest{
 
     private static final String TAG = fetchRequest.class.getSimpleName();
-    private static final String gateway_url = "http://1fc70c299c8d.ngrok.io";
-    Timer timer = new Timer();
+    private static final String gateway_url = "https://android-lambda.herokuapp.com";
+    Timer timer;
+    public String username;
     private Context appContext;
 
-    public fetchRequest(@NonNull Context appContext) {
+    public fetchRequest(@NonNull Context appContext, String username) {
         this.appContext = appContext;
+        this.username = username;
     }
     public void scheduleFetchRequest() {
+        timer = new Timer();
         timer.schedule(new TimerTask() {
 
             @Override
@@ -48,7 +55,7 @@ public class fetchRequest{
                     OkHttpClient client = new OkHttpClient();
 
                     HttpUrl.Builder urlBuilder = HttpUrl.parse(gateway_url+"/getCodes").newBuilder();
-                    //                            urlBuilder.addQueryParameter("code", "happy aa?");
+                    urlBuilder.addQueryParameter("username", username);
                     //                            urlBuilder.addQueryParameter("user", "vogella");
                     String url = urlBuilder.build().toString();
 
@@ -93,17 +100,29 @@ public class fetchRequest{
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
+                                    final String tempQueryID = currId;
+                                    Timer runTimer = new Timer();
 
-                                    Log.i(TAG, "Running code ");
-                                    String output = runCode(code);
-                                    Log.i(TAG, "Sending output");
-                                    ContextCompat.getMainExecutor(appContext).execute(new Runnable() {
+                                    TimerTask runTimerTask = new TimerTask() {
+
                                         @Override
                                         public void run() {
-                                            Toast.makeText(appContext,output,Toast.LENGTH_SHORT).show();
+                                            sendQueryID(tempQueryID);
                                         }
-                                    });
-                                    sendOutput(output, currId, code, input);
+                                    };
+                                    timer.schedule(runTimerTask,0,1000);
+                                    Log.i(TAG, "Running code ");
+                                    String[] outputs = new String[2];
+                                    outputs = runCode(code, input);
+                                    Log.i(TAG, "Sending output");
+//                                    ContextCompat.getMainExecutor(appContext).execute(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            Toast.makeText(appContext, outputs[0]+outputs[1],Toast.LENGTH_SHORT).show();
+//                                        }
+//                                    });
+                                    sendOutput(outputs[0], currId, code, input, outputs[1]);
+                                    runTimerTask.cancel();
                                 }
                             }
                         }
@@ -115,48 +134,89 @@ public class fetchRequest{
 
             }
 
-        },0,5000);//Update text every second
+        },0,5000);//Update text every 5 seconds
     }
 
     public void stopFetchRequest(){
         timer.cancel();
-        timer.purge();
     }
 
 
-    private String runCode(String code) throws FileNotFoundException {
+    private String[] runCode(String code, String input) throws FileNotFoundException {
         final ByteArrayOutputStream tempStream = new ByteArrayOutputStream();
-        String temp = "null";
+        String[] outputs = new String[2];
         PrintStream out = new PrintStream(tempStream);
         Interpreter interpreter = new Interpreter();
         try {
             PrintStream stdout = System.out;
+            InputStream stdin = System.in;
             System.setOut(out);
+            System.setIn(new ByteArrayInputStream(input.getBytes()));
+
             interpreter.set("context", this);   //set any variable,
                                                         // you can refer to it directly from string
             try {
                 interpreter.eval(code);             //execute code
-                temp = tempStream.toString();
+                outputs[0] = tempStream.toString();
+                Log.i(TAG, "output:" + outputs[0]);
             } catch (Exception ex){
-                Log.i(TAG,"script execution failed" + ex);
-                temp = "error:  " + ex;
+                Log.i(TAG,"script execution failed: " + ex);
+                outputs[1] = "error:  " + ex;
             }
             System.setOut(stdout);
-            Log.i(TAG, "output:" + temp);
+            System.setIn(stdin);
         }
         catch (Exception e){    //handle exception
             e.printStackTrace();
         }
-        return temp;
+        return outputs;
     }
 
-    private void sendOutput(String output, String currId, String code, String input){
+    private void sendQueryID(String queryID){
+
+        try {
+
+            OkHttpClient client = new OkHttpClient();
+
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(gateway_url+"/processing").newBuilder();
+            urlBuilder.addQueryParameter("query_id", queryID);
+            String url = urlBuilder.build().toString();
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                }
+
+                @Override
+                public void onResponse(Call call, final Response response) throws IOException {
+                    if (!response.isSuccessful() && response.body() != null) {
+                        throw new IOException("Unexpected code " + response);
+                    } else {
+//                        Log.i(TAG, "Json String from gateway ");
+                        ;
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "Error sending queryID", e);
+        }
+    }
+
+    private void sendOutput(String output, String currId, String code, String input, String error){
 
         try {
 
             OkHttpClient client = new OkHttpClient();
 
             HttpUrl.Builder urlBuilder = HttpUrl.parse(gateway_url+"/submitOutput").newBuilder();
+            urlBuilder.addQueryParameter("username", username);
+            urlBuilder.addQueryParameter("error", error);
             urlBuilder.addQueryParameter("code_output", output);
             urlBuilder.addQueryParameter("currId", currId);
             urlBuilder.addQueryParameter("code_input", input);

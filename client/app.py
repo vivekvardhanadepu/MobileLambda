@@ -52,7 +52,7 @@ def run():
     data = answeredQueries.pop(currId)
     print(data['code'], data['code_input'], data['code_output'])
     assert data['code'] == code and data['code_input'] == code_input
-    return {'error' : '', 'output' : data['code_output']}
+    return {'error' : data['error'], 'output' : data['code_output']}
 
 @app.route('/getCodes')
 def getCodes(): 
@@ -67,12 +67,18 @@ def submitOutput():
     code = request.args.get('code')
     code_input = request.args.get('code_input')
     code_output = request.args.get('code_output') 
+    error = request.args.get('error')
 
     print('code : ', code, '\ncode_input: ', code_input, '\ncode_output: ', code_output)
     
-    answeredQueries[currId] = {'code' : code, 'code_input' : code_input, 'code_output' : code_output}
+    answeredQueries[currId] = {'code' : code, 'code_input' : code_input, 'code_output' : code_output, 'error' : error}
     return ''
 
+@app.route('/processing')
+def processing():
+    queryID = request.args.get('query_id')
+    print("query ID :", queryID)
+    return ''
 # import time 
 # NUM = 0 
 # @app.route('/some_request')

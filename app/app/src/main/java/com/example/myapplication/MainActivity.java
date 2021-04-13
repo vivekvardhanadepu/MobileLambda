@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         welcome_note.setText("Welcome " + username);
         message = findViewById(R.id.response);
 
-        fetchRequest periodicFetchRequest = new fetchRequest(getApplicationContext());
+        fetchRequest periodicFetchRequest = new fetchRequest(getApplicationContext(), username);
 
         start_btn.setOnClickListener(new View.OnClickListener() {
             @Override
