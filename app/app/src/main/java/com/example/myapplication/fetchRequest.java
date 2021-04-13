@@ -29,7 +29,7 @@ import androidx.core.content.ContextCompat;
 public class fetchRequest{
 
     private static final String TAG = fetchRequest.class.getSimpleName();
-    private static final String gateway_url = "http://ffd4e34e94a1.ngrok.io";
+    private static final String gateway_url = "http://1fc70c299c8d.ngrok.io";
     Timer timer = new Timer();
     private Context appContext;
 
