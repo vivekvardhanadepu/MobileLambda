@@ -115,7 +115,7 @@ def checkStatus(currId):
         elif (datetime.now() - curr['last_time']).total_seconds() > WAITING_TIME:
             message, category = f"Some problem occured with {curr['user']}'s server. We're transporting  your code!", 'danger'
 
-            activeQueries[currId] = {'code' : curr['code'], 'code_input' : code_input}
+            activeQueries[currId] = {'code' : curr['code'], 'code_input' : curr['code_input']}
             processingQueries.pop(currId)
         
         else: 
