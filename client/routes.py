@@ -131,7 +131,8 @@ def getCodes():
     global activeQueries 
     global processingQueries 
 
-    username = 'pshishod2645'
+    username = request.args.get('username')
+    print("username:", username)
 
     if not activeQueries : 
         return ''
