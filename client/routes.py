@@ -123,7 +123,6 @@ def checkStatus(currId):
         return {'status' : 'Incomplete', 'message' : message, 'category' : category}
     data = answeredQueries.pop(currId)
     print('Run: ', data)
-    assert data['code'] == code and data['code_input'] == code_input
 
     return {'status': 'Complete', 'error' : data['error'], 'output' : data['code_output']}
 
@@ -160,8 +159,9 @@ def submitOutput():
 
 @app.route('/processing')
 def processing():
-    queryID = request.args.get('query_id')
-    processingQueries[queryId]['last_time'] = datetime.now()
+    queryID = request.args.get('query_id', type = str)
+    if queryId in processingQueries: 
+        print(queryId)
+        processingQueries[queryId]['last_time'] = datetime.now()
 
-    print("query ID :", queryID)
     return ''

@@ -61,7 +61,9 @@ setInterval(function(){
                 $('#compilation-error').val(resp.error);
                 if(!resp.error.length)$('#compilation-error').hide();
                 else  $('#compilation-error').show(); 
-                $('#output').val(resp.output)
+                $('#output').val(resp.output); 
+
+                currId = null; 
             }
         }
     }); 

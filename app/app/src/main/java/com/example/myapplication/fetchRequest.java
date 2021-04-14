@@ -33,7 +33,7 @@ import java.io.FileInputStream;
 public class fetchRequest{
 
     private static final String TAG = fetchRequest.class.getSimpleName();
-    private static final String gateway_url = "http://54.160.83.123:5000";
+    private static final String gateway_url = "http://2ea0deff2c0a.ngrok.io";
     Timer timer;
     public String username;
     private Context appContext;
