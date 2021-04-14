@@ -1,0 +1,91 @@
+{% extends 'base.j2' %}
+{% block content %}
+
+<body> 
+<div class = "mb-1"> 
+    <h4 style = "text-decoration: underline; " class = "col-1">{{ code.name }}</h4>
+
+    <select id = "theme-select" class = "col-2">
+    {% with themes = ['ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt', 'crimson_editor', 'dawn', 'dracula', 
+    'dreamweaver', 'eclipse', 'github', 'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'merbivore', 'merbivore_soft', 'mono_industrial', 
+    'monokai', 'xcode'] %}
+
+    {% for theme in themes %}
+        <option value = "{{ theme }}" {{ 'selected' if theme == 'xcode' }}>{{ theme.split('_') |  join(' ') | title}}</option> 
+    {% endfor %}
+    {% endwith %}
+    </select> 
+
+    <select id = "lang-select" class = "col-1" > 
+        {% with langs = ['Python', 'JavaScript', 'Java', 'C#', 'C', 'C++', 'Clojure', 'Go', 'Groovy', 'JSON', 'Scala', 'Ruby', 'XML'] %}
+        {% for lang in langs %}
+            <option value ="{{ (lang | lower)}}" {{'selected' if lang == 'Java'}}>{{ lang }}</option>
+        {% endfor %}
+        {% endwith %}
+    </select> 
+</div> 
+<div class = "d-flex"> 
+    <div style = "width : 1000px; height: 450px;" class = "col-8" id = "editor"
+    >{{ code.code if code.code}}</div>
+
+    <div class = "col-4 " style = "height: 400px;">
+        <textarea id = 'input' class = "form-control mb-3" style = "height: 100px;"  placeholder = "Input"></textarea>
+        <textarea id = "compilation-error" style = "display : none; height: 220px" class = "form-control mb-3" disabled = "" placeholder = "Compilation Error"></textarea> 
+        <textarea id = 'output' class = "form-control" style = "height: 100px;" placeholder = "Output" disabled = ""></textarea>  
+    </div> 
+</div> 
+
+<div style = "text-align: right;" class = "col-8">
+<button class = "btn btn-success"  onclick = "runCode()">Run</button> 
+</div> 
+
+</body> 
+
+
+<script> 
+var editor = ace.edit("editor");
+editor.setTheme("ace/theme/xcode");
+editor.session.setMode("ace/mode/java");
+var currId = null;
+
+setInterval(function(){
+    if(currId == null)return ;
+    console.log(currId, typeof(currId)); 
+    $.ajax({
+        url : '/checkStatus/' + currId,
+        success: function(resp){
+            console.log('checkStatus resp: ', resp); 
+            if(resp.status == 'Incomplete'){
+                $('#output').val(resp.message);
+            }else if(resp.status == 'Complete'){
+                $('#compilation-error').val(resp.error);
+                if(!resp.error.length)$('#compilation-error').hide();
+                else  $('#compilation-error').show(); 
+                $('#output').val(resp.output)
+            }
+        }
+    }); 
+}, 1000); 
+$('#theme-select').change(() => 
+editor.setTheme("ace/theme/" + $('#theme-select').val() ));
+
+$('#lang-select').change(() => 
+editor.session.setMode("ace/mode/" + $('#lang-select').val() ) );
+function runCode(){
+    var code = editor.getValue(); 
+    $.ajax({
+        url : '/run/{{ code.id }}',
+        data: {
+            code: editor.getValue(),
+            input: $('#input').val(),
+        },
+        success: function(runCurrId){
+            console.log('run currId: ', runCurrId); 
+            currId = runCurrId;
+            $('#compilation-error').val(resp.error);
+        }
+    }); 
+}
+</script> 
+
+{% endblock %}

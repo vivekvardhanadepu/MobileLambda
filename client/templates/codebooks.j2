@@ -1,0 +1,23 @@
+{% extends 'base.j2' %}
+{% block content %}
+
+<div class = "mx-2 mt-2"> 
+<div class = "d-flex mb-2"> 
+<span role = "button" class="material-icons" style = "font-size: 36px" onclick = "$('#create-new').toggle();">note_add</span>
+
+<form id = "create-new" action = "" method = "POST" style = "display: none;" > 
+<div class = "d-flex">
+    <input name = "name" class = "form-control mx-3" placheholder = "Name">
+    <button type = "submit" class = "btn btn-info btn-sm">Create</button>
+</div> 
+</form>
+
+</div> 
+
+<ul class = "list-group col-6"> 
+    {% for code in current_user.codes %}
+        <li class = "list-group-item"><a style = "color: black; "  href = "/code/{{code.id}}"> {{ code.name }} </a> </li>
+    {% endfor %}
+</ul>
+</div> 
+{% endblock %}
